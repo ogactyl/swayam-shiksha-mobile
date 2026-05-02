@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Swayam Shiksha",
-    "slug": "swayam-shiksha-mobile",
+    "slug": "swayam-shiksha",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
