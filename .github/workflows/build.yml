@@ -10,6 +10,7 @@ jobs:
   build:
     name: Build Android APK
     runs-on: ubuntu-latest
+    timeout-minutes: 60
 
     steps:
       - name: Checkout code
@@ -27,6 +28,49 @@ jobs:
         run: npm install --legacy-peer-deps
 
       - name: Build APK (EAS)
-        run: eas build --platform android --profile preview --non-interactive
+        id: eas_build
+        run: |
+          BUILD_OUTPUT=$(eas build --platform android --profile preview --non-interactive --json 2>/dev/null || true)
+          echo "build_output=$BUILD_OUTPUT" >> $GITHUB_OUTPUT
+          eas build --platform android --profile preview --non-interactive
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Download APK from EAS
+        run: |
+          APK_URL=$(eas build:list --platform android --status finished --limit 1 --json --non-interactive 2>/dev/null | node -e "const d=require('fs').readFileSync('/dev/stdin','utf8'); try { const j=JSON.parse(d); console.log(j[0]?.artifacts?.buildUrl || ''); } catch(e) { console.log(''); }")
+          if [ -n "$APK_URL" ]; then
+            echo "Downloading APK from: $APK_URL"
+            curl -L -o swayam-shiksha.apk "$APK_URL"
+            echo "APK downloaded successfully"
+            ls -lh swayam-shiksha.apk
+          else
+            echo "Could not get APK URL, checking EAS artifacts..."
+            eas build:list --platform android --status finished --limit 1 --json --non-interactive
+          fi
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Upload APK as GitHub Actions Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: swayam-shiksha-apk
+          path: swayam-shiksha.apk
+          if-no-files-found: warn
+
+      - name: Create GitHub Release with APK
+        uses: softprops/action-gh-release@v2
+        if: success()
+        with:
+          tag_name: apk-${{ github.run_number }}
+          name: Swayam Shiksha APK - Build ${{ github.run_number }}
+          body: |
+            Android APK built via EAS Build.
+            
+            Download the APK below and install on your Android device.
+            Enable "Install from unknown sources" in settings before installing.
+          files: swayam-shiksha.apk
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
