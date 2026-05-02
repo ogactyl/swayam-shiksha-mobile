@@ -5,21 +5,24 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_DOMAIN": "a58006be-8ee8-4237-9ffa-39dbc44b16c8-00-3h86eizcjiewh.sisko.replit.dev"
+      }
     },
     "preview": {
       "distribution": "internal",
       "android": {
         "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_DOMAIN": "a58006be-8ee8-4237-9ffa-39dbc44b16c8-00-3h86eizcjiewh.sisko.replit.dev"
       }
     },
     "production": {
-      "android": {
-        "buildType": "app-bundle"
+      "env": {
+        "EXPO_PUBLIC_DOMAIN": "a58006be-8ee8-4237-9ffa-39dbc44b16c8-00-3h86eizcjiewh.sisko.replit.dev"
       }
     }
-  },
-  "submit": {
-    "production": {}
   }
 }
